@@ -84,8 +84,8 @@ const updateUser=async(req,res)=>{
             dob:req.body.dob,
             gender:req.body.gender
         }
-        
-        const user=await userService.updateUser(data,req.user.id)
+        const where = {where :{id:req.user.id} }
+        const user=await userService.updateActivity("user",data,where)
         res.status(200).json(user)
     }
     catch(e)
@@ -127,9 +127,9 @@ const requestStatus=async(req,res)=>{
         //accept request : 1
         if(req.body.status === 1)
         {
-            reqStatus=await FriendRequest.update({status : 1},{
-                where:{ sender_id:req.body.id,receiver_id:req.user.id  }
-            })
+            const where = { where:{ sender_id:req.body.id,receiver_id:req.user.id }}
+            const data ={status:1}
+            reqStatus=await userService.updateActivity("friend",data,where)
         }
         //reject request : 2
         if(req.body.status === 2)
@@ -148,16 +148,7 @@ const requestStatus=async(req,res)=>{
 const myRequest=async(req,res)=>{
     try
     {
-        const data = await db.sequelize.query(
-            `SELECT user.name, user.id 
-             FROM users as user,frindrequests as fr
-             WHERE user.id=fr.sender_id 
-             AND fr.status= 0
-             AND fr.receiver_id = ?`,
-            {
-                type:QueryTypes.SELECT,
-                replacements:[req.user.id]
-            })
+        const data = await userService.myRequest(0,req.user.id)
         res.status(200).json(data)
     }
     catch(e)
@@ -169,17 +160,7 @@ const myRequest=async(req,res)=>{
 const myFriends=async(req,res)=>{
     try
     {
-        const data = await db.sequelize.query(
-            `SELECT user.name 
-             FROM users as user,frindrequests as fr
-             WHERE user.id=fr.sender_id 
-             AND fr.status= 1
-             AND fr.receiver_id = ?`,
-            {
-                type:QueryTypes.SELECT,
-                replacements:[req.user.id]
-            })
-         
+        const data = await userService.myRequest(1,req.user.id)
         res.status(200).json(data)
     }
     catch(e)

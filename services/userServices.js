@@ -42,13 +42,19 @@ const searchUser = async(userName)=>{
         throw Error('Error while saving users')
     }
 }
-//---------------------------------Update user---------------------------------------------
-const updateUser=async(data,userId)=>{
+//---------------------------------Update Operation---------------------------------------------
+const updateActivity=async(modelName,data,where)=>{
     try
     {
-        const user=await Users.update(data,{
-            where:{ id:userId  }
-        })
+        let user
+        if(modelName === "user")
+        {
+            user=await Users.update(data,where)
+        }
+        if(modelName === "friend")
+        {
+            user=await FriendRequest.update(data,where)
+        }
         return user
     }
     catch(e)
@@ -68,12 +74,33 @@ const cancleRequest = async(dataObject)=>{
         throw Error('Error while rejecting request')
     }
 }
-
+//---------------------------coming Friend Request----------------------------------------------
+const myRequest=async(reqStatus,userId)=>{
+    try
+    {
+        const data = await db.sequelize.query(
+            `SELECT user.name, user.id 
+             FROM users as user,frindrequests as fr
+             WHERE user.id=fr.sender_id 
+             AND fr.status= ?
+             AND fr.receiver_id = ?`,
+            {
+                type:QueryTypes.SELECT,
+                replacements:[reqStatus,userId]
+            })
+        return data
+    }
+    catch(e)
+    {
+        throw Error('Error while rejecting request')
+    }
+}
 
 
 module.exports={
     saveUser,
     searchUser,
-    updateUser,
-    cancleRequest
+    updateActivity,
+    cancleRequest,
+    myRequest
 }
