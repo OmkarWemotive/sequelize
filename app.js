@@ -37,7 +37,6 @@ app.get('/show-profile',auth,userRouter.viewUser)
 app.post('/search',userRouter.searchUser)
 app.patch('/update',auth,userRouter.updateUser)
 app.get('/logout',auth,userRouter.logoutUser)
-app.post('/reset-password',auth,userRouter.resetPasswordUser)
 app.get('/users',userRouter.allUser)
 
 //--------------------------------------Friend Request Routs-----------------------------------

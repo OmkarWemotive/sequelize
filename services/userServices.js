@@ -46,7 +46,6 @@ const searchUser = async(userName)=>{
 const updateUser=async(data,userId)=>{
     try
     {
-        
         const user=await Users.update(data,{
             where:{ id:userId  }
         })
@@ -57,10 +56,24 @@ const updateUser=async(data,userId)=>{
         throw Error('Error while updating users')
     }
 }
+//---------------------------------cancle and reject request--------------------------------
+const cancleRequest = async(dataObject)=>{
+    try
+    {
+        const reqStatus=await FriendRequest.destroy({where:dataObject})
+        return reqStatus
+    }
+    catch(e)
+    {
+        throw Error('Error while rejecting request')
+    }
+}
+
 
 
 module.exports={
     saveUser,
     searchUser,
-    updateUser
+    updateUser,
+    cancleRequest
 }

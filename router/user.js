@@ -110,7 +110,8 @@ const sendRequest=async(req,res)=>{
 const cancleRequest=async(req,res)=>{
     try
     {
-        const reqStatus= FriendRequest.destroy({where:{ sender_id:req.user.id,receiver_id:req.body.id }})
+        const data ={ sender_id:req.user.id,receiver_id:req.body.id }
+        const reqStatus = await userService.cancleRequest(data)
         res.status(200).send(reqStatus)
     }
     catch(e)
@@ -133,7 +134,8 @@ const requestStatus=async(req,res)=>{
         //reject request : 2
         if(req.body.status === 2)
         {
-            reqStatus = FriendRequest.destroy({where:{ sender_id:req.body.id,receiver_id:req.user.id }})
+            const data= { sender_id:req.body.id,receiver_id:req.user.id }
+            reqStatus = await userService.cancleRequest(data)
         }
         res.status(200).send(reqStatus)
     }
@@ -185,30 +187,6 @@ const myFriends=async(req,res)=>{
         res.status(400).send(e)
     }
 }
-//----------------------------------Reset Password-----------------------------------
-const resetPasswordUser = async(req,res)=>{
-    try
-    {
-        const oldPassword = req.body.oldPass
-        const newPassword = req.body.newPass
-
-        const user=await Users.checkPassword(oldPassword,req.user.password)
-        if(user.length === 0)
-        {
-            res.status(400).json({"Error":"Password wrong"})
-        }
-
-        console.log(oldPassword,newPassword)
-
-        newPassword= await bcrypt.hash(newPassword,8)
-        const isUpdte=await Users.update({password:newPassword},{ where:{ id:req.user.id  } })
-        res.status(200).send(isUpdte)
-    }
-    catch(e)
-    {
-        res.status(400).send(e)
-    }
-}
 //----------------------------------All Users-----------------------------------
 const allUser = async(req,res)=>{
     try
@@ -239,6 +217,5 @@ module.exports={
     requestStatus,
     myRequest,
     myFriends,
-    resetPasswordUser,
     allUser
 }
