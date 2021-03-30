@@ -3,13 +3,14 @@ const {Sequelize, Op,QueryTypes} = require('Sequelize')
 const db=require('../models')
 const Users =db.users
 const FriendRequest=db.friendRequest
+const userService=require('../services/userServices')
 
 //--------------------------------Save User In System----------------------------------
 const saveUser =async(req,res)=>{
     try
     {
         req.body.password= await bcrypt.hash(req.body.password,8)
-        const user=await Users.create(req.body)
+        const user=await userService.saveUser(req.body)
         const token= await user.generateAuthToken()
         res.status(201).json({"token":token})
     }
