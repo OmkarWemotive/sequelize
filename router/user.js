@@ -10,7 +10,7 @@ const saveUser =async(req,res)=>{
     try
     {
         req.body.password= await bcrypt.hash(req.body.password,8)
-        const user=await userService.saveUser(req.body)
+        const user=await userService.saveUser("Users",req.body)
         const token= await user.generateAuthToken()
         res.status(201).json({"token":token})
     }
@@ -61,16 +61,11 @@ const viewUser=async(req,res)=>{
 }
 //--------------------------------Search User---------------------------------
 const searchUser = async(req,res)=>{
+    
     try
     {
-            const data=await Users.findAll({
-                attributes:['id','name','email'],
-                where:
-                {
-                    name:{[Op.like]:req.body.name+"%" }
-                },
-            })
-            res.status(200).json(data)
+        const data=await userService.searchUser(req.body.name)
+        res.status(200).json(data)
     }
     catch(e)
     {
@@ -89,10 +84,8 @@ const updateUser=async(req,res)=>{
             dob:req.body.dob,
             gender:req.body.gender
         }
-
-        const user=await Users.update(data,{
-            where:{ id:req.user.id  }
-        })
+        
+        const user=await userService.updateUser(data,req.user.id)
         res.status(200).json(user)
     }
     catch(e)
@@ -105,7 +98,7 @@ const sendRequest=async(req,res)=>{
     try
     {
         const data={sender_id:req.user.id,receiver_id:req.body.id}
-        const user=await FriendRequest.create(data)
+        const user=await userService.saveUser("friend",data)
         res.status(200).send(user)
     }
     catch(e)

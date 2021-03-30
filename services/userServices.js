@@ -3,12 +3,20 @@ const db=require('../models')
 const Users =db.users
 const FriendRequest=db.friendRequest
 
-//---------------------------------Save user---------------------------------------------
+//---------------------------------Save Operation---------------------------------------------
 
-const saveUser = async(data)=> {
+const saveUser = async(modelName,data)=> {
     try
     {
-        const user=await Users.create(data)
+        let user
+        if(modelName === "Users")
+        {
+            user=await Users.create(data)
+        }
+        if(modelName === "friend")
+        {
+            user=await FriendRequest.create(data)
+        }
         return user
     }
     catch(e)
@@ -25,18 +33,34 @@ const searchUser = async(userName)=>{
                 where:
                 {
                     name:{[Op.like]:userName+"%" }
-                },
+                }
             })
-            res.status(200).json(data)
+            return data
     }
     catch(e)
     {
-        res.status(400).send(e)
+        throw Error('Error while saving users')
+    }
+}
+//---------------------------------Update user---------------------------------------------
+const updateUser=async(data,userId)=>{
+    try
+    {
+        
+        const user=await Users.update(data,{
+            where:{ id:userId  }
+        })
+        return user
+    }
+    catch(e)
+    {
+        throw Error('Error while updating users')
     }
 }
 
 
 module.exports={
     saveUser,
-    searchUser
+    searchUser,
+    updateUser
 }
