@@ -25,16 +25,11 @@ const saveUser = async(modelName,data)=> {
     }
 }
 //---------------------------------Search user---------------------------------------------
-const searchUser = async(userName)=>{
+const fetchUser = async(where=NULL)=>{
     try
     {
-            const data=await Users.findAll({
-                attributes:['id','name','email'],
-                where:
-                {
-                    name:{[Op.like]:userName+"%" }
-                }
-            })
+        // attributes:['id','name','email']
+            const data=await Users.findAll(where)
             return data
     }
     catch(e)
@@ -99,7 +94,7 @@ const myRequest=async(reqStatus,userId)=>{
 
 module.exports={
     saveUser,
-    searchUser,
+    fetchUser,
     updateActivity,
     cancleRequest,
     myRequest

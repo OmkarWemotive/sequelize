@@ -64,7 +64,9 @@ const searchUser = async(req,res)=>{
     
     try
     {
-        const data=await userService.searchUser(req.body.name)
+        const where={ where:{name:{[Op.like]:req.body.name+"%" }}}
+        
+        const data=await userService.fetchUser(where)
         res.status(200).json(data)
     }
     catch(e)
@@ -172,9 +174,7 @@ const myFriends=async(req,res)=>{
 const allUser = async(req,res)=>{
     try
     {
-        const data=await Users.findAll({
-            attributes:['id','name','email']
-        })
+        const data =await userService.fetchUser()
         res.status(200).json(data)
     }
     catch(e)
