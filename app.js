@@ -9,7 +9,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 
 const port = 4000
-require('./models')
+// require('./models')
 
 //----------------------------Upload Files middleware-------------------------------------------------
 const storage = multer.diskStorage({

@@ -30,16 +30,16 @@ const addOperation = async(type,data)=>{
     }
 }
 //-----------------------------------View Post------------------------------------------------
-const viewPost=async(whereCondition=NULL)=>{
+const viewPost=async(whereClause)=>{
     try
     {
         const data = await Post.findAll({
-            attributes:['image','description'],
+            attributes:['image','description','likeCount','commentCount'],
             include:[{
                 model:User,
                 attributes:['name','email']
             }],
-            where:whereCondition
+            where:whereClause
         })
         return data
     }

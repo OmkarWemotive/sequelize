@@ -1,8 +1,7 @@
 const bcrypt =require('bcryptjs')
-const {Sequelize, Op,QueryTypes} = require('Sequelize')
+const { Op} = require('Sequelize')
 const db=require('../models')
 const Users =db.users
-const FriendRequest=db.friendRequest
 const userService=require('../services/userServices')
 
 //--------------------------------Save User In System----------------------------------
@@ -174,7 +173,7 @@ const myFriends=async(req,res)=>{
 const allUser = async(req,res)=>{
     try
     {
-        const data =await userService.fetchUser()
+        const data =await userService.fetchUser({})
         res.status(200).json(data)
     }
     catch(e)

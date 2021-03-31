@@ -25,7 +25,7 @@ const saveUser = async(modelName,data)=> {
     }
 }
 //---------------------------------fetch user---------------------------------------------
-const fetchUser = async(where=NULL)=>{
+const fetchUser = async(where)=>{
     try
     {
         // attributes:['id','name','email']

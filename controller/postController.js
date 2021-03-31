@@ -25,7 +25,7 @@ const addPost = async(req,res)=>{
 const viewPost=async(req,res)=>{
     try
     {
-        const where ={post_id:req.user.id}
+        const where ={user_id:req.user.id}
         const data = await postSerice.viewPost(where)
         res.status(200).send(data)
     }
@@ -39,7 +39,7 @@ const viewAllPost=async(req,res)=>{
 
     try
     {
-        const data = await postSerice.viewPost()
+        const data = await postSerice.viewPost(null)
         res.status(200).send(data)
     }
     catch(e)
@@ -51,13 +51,13 @@ const viewAllPost=async(req,res)=>{
 const commentPost= async(req,res)=>{
     try
     {
-        await postSerice.updateOperation({ commentCount: Sequelize.literal('commentCount + 1') },{ id: req.body.post_id })
         const data=({
             "user_id":req.user.id,
             "post_id":req.body.post_id,
             "comment":req.body.comment
         })
         const comment=await postSerice.addOperation("comment",data)
+        await postSerice.updateOperation({ commentCount: Sequelize.literal('commentCount + 1') },{ id: req.body.post_id })
         res.status(200).send(comment)
     }
     catch(e)
@@ -76,13 +76,12 @@ const likePost= async(req,res)=>{
         if(isLike.length === 0)
         {
             //increament count in post tbl
-            await postSerice.updateOperation({ likeCount: Sequelize.literal('likeCount + 1') },{ id: req.body.post_id })
-            
             const data={
                 "user_id":req.user.id,
                 "post_id":req.body.post_id,
             }
             const like=await postSerice.addOperation("like",data)
+            await postSerice.updateOperation({ likeCount: Sequelize.literal('likeCount + 1') },{ id: req.body.post_id })
             res.status(200).send(like)
         }
         //if not then send message
@@ -102,9 +101,9 @@ const likePost= async(req,res)=>{
 const dislikePost= async(req,res)=>{
     try
     {
+        const result=await postSerice.DislikeOperation({ user_id:req.user.id,post_id:req.body.post_id })
         await postSerice.updateOperation({ likeCount: Sequelize.literal('likeCount - 1') },{ id: req.body.post_id })
-        await postSerice.DeleteOperation({ user_id:req.user.id,post_id:req.body.post_id })
-        res.send({"success":"Dislike successfully"})
+        res.send(result,{"success":"Dislike successfully"})
     }
     catch(e)
     {
