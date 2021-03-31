@@ -13,7 +13,7 @@ const addPost = async(req,res)=>{
             ,
             "user_id":req.user.id
         }
-        const post=await postSerice.addOperation("user",data)
+        const post=await postSerice.addOperation("post",data)
         res.status(200).send(post)
     }
     catch(e)

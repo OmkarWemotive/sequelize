@@ -26,8 +26,8 @@ const upload = multer({ storage: storage })
 
 //--------------------------------------Load router--------------------------------
 
-const userRouter=require('./router/user')
-const postRouter=require('./router/post')
+const userRouter=require('./controller/userController')
+const postRouter=require('./controller/postController')
 
 //--------------------------------------User Routs-----------------------------------
 
