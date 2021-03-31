@@ -56,7 +56,6 @@ app.post('/comment',auth,postRouter.commentPost)
 app.post('/like',auth,postRouter.likePost)
 app.post('/dislike',auth,postRouter.dislikePost)
 app.get('/delete-post/:id',auth,postRouter.deletePost)
-app.get('/view-post/:id',postRouter.viewSinglePostById)
 app.post('/view-comment',postRouter.viewPostComment)
 app.post('/view-like',postRouter.viewPostLike)
 

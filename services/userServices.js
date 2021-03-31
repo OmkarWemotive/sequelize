@@ -24,7 +24,7 @@ const saveUser = async(modelName,data)=> {
         throw Error('Error while saving users')
     }
 }
-//---------------------------------Search user---------------------------------------------
+//---------------------------------fetch user---------------------------------------------
 const fetchUser = async(where=NULL)=>{
     try
     {

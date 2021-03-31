@@ -1,9 +1,7 @@
-const {Sequelize, Op,QueryTypes} = require('Sequelize')
-const db=require('../models')
-const Post =db.post
-const User =db.users
-const Comment=db.comment
-const Like=db.like
+const {Sequelize} = require('Sequelize')
+const postSerice = require('../services/postServices')
+
+
 //-----------------------------------Add Post------------------------------------------------
 const addPost = async(req,res)=>{
 
@@ -15,9 +13,8 @@ const addPost = async(req,res)=>{
             ,
             "user_id":req.user.id
         }
-        const post=await Post.create(data)
+        const post=await postSerice.addOperation("user",data)
         res.status(200).send(post)
-
     }
     catch(e)
     {
@@ -28,14 +25,8 @@ const addPost = async(req,res)=>{
 const viewPost=async(req,res)=>{
     try
     {
-        const data = await Post.findAll({
-            attributes:['image','description'],
-            include:[{
-                model:User,
-                attributes:['name','email']
-            }],
-            where :{post_id:req.user.id}
-        })
+        const where ={post_id:req.user.id}
+        const data = await postSerice.viewPost(where)
         res.status(200).send(data)
     }
     catch(e)
@@ -48,14 +39,7 @@ const viewAllPost=async(req,res)=>{
 
     try
     {
-        
-        const data = await Post.findAll({
-            attributes:['image','description'],
-            include:[{
-                model:User,
-                attributes:['name']
-            }]
-        })
+        const data = await postSerice.viewPost()
         res.status(200).send(data)
     }
     catch(e)
@@ -67,13 +51,13 @@ const viewAllPost=async(req,res)=>{
 const commentPost= async(req,res)=>{
     try
     {
-        await Post.update({  commentCount: Sequelize.literal('commentCount + 1') },{ where: { id: req.body.post_id }})
+        await postSerice.updateOperation({ commentCount: Sequelize.literal('commentCount + 1') },{ id: req.body.post_id })
         const data=({
             "user_id":req.user.id,
             "post_id":req.body.post_id,
             "comment":req.body.comment
         })
-        const comment=await Comment.create(data)
+        const comment=await postSerice.addOperation("comment",data)
         res.status(200).send(comment)
     }
     catch(e)
@@ -85,17 +69,23 @@ const commentPost= async(req,res)=>{
 const likePost= async(req,res)=>{
     try
     {
-        const isLike=await Like.findAll({where: {post_id:req.body.post_id,user_id:req.user.id}})
+        //check here : this user is like this post or not
+        const isLike=await postSerice.findLike(req.body.post_id,req.user.id)
+
+        //if not then like this post
         if(isLike.length === 0)
         {
-            await Post.update({  likeCount: Sequelize.literal('likeCount + 1') },{ where: { id: req.body.post_id }})
+            //increament count in post tbl
+            await postSerice.updateOperation({ likeCount: Sequelize.literal('likeCount + 1') },{ id: req.body.post_id })
+            
             const data={
                 "user_id":req.user.id,
                 "post_id":req.body.post_id,
             }
-            const like=await Like.create(data)
+            const like=await postSerice.addOperation("like",data)
             res.status(200).send(like)
         }
+        //if not then send message
         else
         {
             res.status(200).send({'error':'u have already like this post'})
@@ -112,8 +102,8 @@ const likePost= async(req,res)=>{
 const dislikePost= async(req,res)=>{
     try
     {
-        await Post.update({  likeCount: Sequelize.literal('likeCount - 1') },{ where: { id: req.body.post_id }})
-        const dislike=await Like.destroy({where:{ user_id:req.user.id,post_id:req.body.post_id }})
+        await postSerice.updateOperation({ likeCount: Sequelize.literal('likeCount - 1') },{ id: req.body.post_id })
+        await postSerice.DeleteOperation({ user_id:req.user.id,post_id:req.body.post_id })
         res.send({"success":"Dislike successfully"})
     }
     catch(e)
@@ -125,39 +115,8 @@ const dislikePost= async(req,res)=>{
 const deletePost=async(req,res)=>{
     try
     {
-        const id = req.params.id
-        const post =await Post.destroy({where:{ id:id }})
-        const like =await Like.destroy({where:{ post_id:id }})
-        const comment =await Comment.destroy({where:{ post_id:id }})
-        res.status(200).send({post, like, comment})
-    }
-    catch(e)
-    {
-        res.status(400).send(e)
-    }
-}
-//-----------------------------------View Single post By ID------------------------------------------------
-const viewSinglePostById=async(req,res)=>{
-    try
-    {
-        const userData = await User.findAll({
-            attributes:['name','id'],
-            include:[{
-                model:Comment,
-                as:'commentdetails',
-                attributes:['comment','created_At']
-            }],
-            where :{post_id:req.body.id}
-        })
-    //     const comment = await db.sequelize.query(
-    //  "select comment,name from users,comments where users.id=comments.user_id AND comments.post_id=?",
-    //     {
-    //         type:QueryTypes.SELECT,
-    //         replacements:[req.body.id]
-    //     })
-
-
-        res.status(200).send(userData)
+        const result =await postSerice.deletePost(req.params.id)
+        res.status(200).send(result)
     }
     catch(e)
     {
@@ -168,15 +127,7 @@ const viewSinglePostById=async(req,res)=>{
 const viewPostComment=async(req,res)=>{
     try
     {
-        const comments = await db.sequelize.query(
-        `SELECT comment.comment,user.name 
-         FROM users as user,comments as comment 
-         WHERE user.id=comment.user_id 
-         AND comment.post_id=?`,
-        {
-            type:QueryTypes.SELECT,
-            replacements:[req.body.id]
-        })
+        const comments = await postSerice.viewPostComment(req.body.id)
         res.status(200).send(comments)
     }
     catch(e)
@@ -188,16 +139,8 @@ const viewPostComment=async(req,res)=>{
 const viewPostLike=async(req,res)=>{
     try
     {
-        const likes = await db.sequelize.query(
-            `SELECT user.name 
-             FROM users as user,likes as like1 
-             WHERE user.id=like1.user_id 
-             AND like1.post_id=?`,
-            {
-                type:QueryTypes.SELECT,
-                replacements:[req.body.id]
-            })
-            res.status(200).send(likes)
+        const likes = await postSerice.viewPostLike(req.body.id)
+        res.status(200).send(likes)
     }
     catch(e)
     {
@@ -213,7 +156,6 @@ module.exports={
     likePost,
     dislikePost,
     deletePost,
-    viewSinglePostById,
     viewPostComment,
     viewPostLike
 }
